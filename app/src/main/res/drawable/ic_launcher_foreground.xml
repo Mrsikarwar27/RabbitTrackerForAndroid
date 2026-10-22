@@ -1,0 +1,179 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.8"
+        android:scaleY="0.8"
+        android:translateX="0"
+        android:translateY="2">
+
+        <!-- LEFT EAR -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:pathData="M 38,48 C 22,35 15,10 32,7 C 45,5 47,28 47,46 Z" />
+        <!-- LEFT EAR INNER PINK -->
+        <path
+            android:fillColor="#FF7B95"
+            android:pathData="M 36,43 C 26,32 22,13 33,11 C 41,10 43,26 43,42 Z" />
+
+        <!-- RIGHT EAR (BENT WITH BOW) -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:pathData="M 62,46 C 62,28 72,12 88,18 C 98,22 88,38 72,48 Z" />
+        <!-- RIGHT EAR INNER PINK -->
+        <path
+            android:fillColor="#FF7B95"
+            android:pathData="M 65,42 C 65,29 74,17 85,21 C 92,24 84,35 73,43 Z" />
+
+        <!-- TAIL -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:pathData="M 72,82 C 78,82 83,87 81,93 C 79,97 73,98 68,95 Z" />
+
+        <!-- BODY -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:pathData="M 38,72 C 32,70 28,78 34,84 C 40,90 42,98 52,98 C 64,98 72,92 70,80 C 68,72 62,70 54,72 Z" />
+
+        <!-- FOOT LEFT -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:pathData="M 36,82 C 30,86 32,96 42,96 C 46,96 46,88 40,84 Z" />
+        <!-- PAW PADS -->
+        <path
+            android:fillColor="#FF7B95"
+            android:pathData="M 34,90 A 1.5,1.5 0 1,1 37,90 A 1.5,1.5 0 1,1 34,90" />
+        <path
+            android:fillColor="#FF7B95"
+            android:pathData="M 38,92 A 1.5,1.5 0 1,1 41,92 A 1.5,1.5 0 1,1 38,92" />
+
+        <!-- HEAD -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:pathData="M 54,32 C 32,32 26,48 26,62 C 26,76 38,82 54,82 C 70,82 82,76 82,62 C 82,48 76,32 54,32 Z" />
+
+        <!-- CHEEK BLUSH LEFT -->
+        <path
+            android:fillColor="#FFAEC1"
+            android:pathData="M 32,62 A 4,2.5 0 1,1 40,62 A 4,2.5 0 1,1 32,62" />
+        <!-- CHEEK BLUSH RIGHT -->
+        <path
+            android:fillColor="#FFAEC1"
+            android:pathData="M 68,62 A 4,2.5 0 1,1 76,62 A 4,2.5 0 1,1 68,62" />
+
+        <!-- EYEBROW LEFT -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 40,46 Q 44,43 48,46" />
+        <!-- EYEBROW RIGHT -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M 60,46 Q 64,43 68,46" />
+
+        <!-- EYE LEFT -->
+        <path
+            android:fillColor="#211215"
+            android:pathData="M 40,54 A 4,5.5 0 1,1 48,54 A 4,5.5 0 1,1 40,54" />
+        <!-- EYE LEFT HIGHLIGHT BIG -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 42,52 A 1.8,2.2 0 1,1 45.6,52 A 1.8,2.2 0 1,1 42,52" />
+        <!-- EYE LEFT HIGHLIGHT SMALL -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 45,56 A 0.8,0.8 0 1,1 46.6,56 A 0.8,0.8 0 1,1 45,56" />
+
+        <!-- EYE RIGHT -->
+        <path
+            android:fillColor="#211215"
+            android:pathData="M 60,54 A 4,5.5 0 1,1 68,54 A 4,5.5 0 1,1 60,54" />
+        <!-- EYE RIGHT HIGHLIGHT BIG -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 62,52 A 1.8,2.2 0 1,1 65.6,52 A 1.8,2.2 0 1,1 62,52" />
+        <!-- EYE RIGHT HIGHLIGHT SMALL -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 65,56 A 0.8,0.8 0 1,1 66.6,56 A 0.8,0.8 0 1,1 65,56" />
+
+        <!-- NOSE -->
+        <path
+            android:fillColor="#FF6584"
+            android:pathData="M 52,58 C 52,57 56,57 56,58 C 56,60 54,61 54,61 C 54,61 52,60 52,58 Z" />
+
+        <!-- MOUTH & TOOTH -->
+        <path
+            android:fillColor="#E8334A"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 49,63 Q 54,61 59,63 C 60,70 48,70 49,63 Z" />
+        <!-- TOOTH -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 52.5,62.5 H 55.5 V 65 H 52.5 Z" />
+
+        <!-- RED BOW ON EAR -->
+        <path
+            android:fillColor="#E8334A"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 63,27 C 52,18 52,36 63,33 Z" />
+        <path
+            android:fillColor="#E8334A"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 67,27 C 78,18 78,36 67,33 Z" />
+        <path
+            android:fillColor="#CC2238"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 63,27 A 3,3 0 1,1 67,33 A 3,3 0 1,1 63,27" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 57,24 A 1.5,1 0 1,1 60,24 A 1.5,1 0 1,1 57,24" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 70,24 A 1.5,1 0 1,1 73,24 A 1.5,1 0 1,1 70,24" />
+
+        <!-- RED BOW TIE AT NECK -->
+        <path
+            android:fillColor="#E8334A"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 52,74 C 40,66 40,82 52,78 Z" />
+        <path
+            android:fillColor="#E8334A"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 56,74 C 68,66 68,82 56,78 Z" />
+        <path
+            android:fillColor="#CC2238"
+            android:strokeColor="#2C1A1D"
+            android:strokeWidth="1.2"
+            android:pathData="M 52,74 A 2.5,2.5 0 1,1 56,78 A 2.5,2.5 0 1,1 52,74" />
+
+    </group>
+</vector>

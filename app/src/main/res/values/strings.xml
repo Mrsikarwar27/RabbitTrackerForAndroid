@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Rabbit Tracker</string>
+    <string name="widget_description">Today\'s habits</string>
+</resources>
