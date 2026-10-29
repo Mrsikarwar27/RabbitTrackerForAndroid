@@ -63,6 +63,26 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
     private val _loaded = MutableStateFlow(false)
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
 
+    private val _totalCompletions = MutableStateFlow(0)
+    val totalCompletions: StateFlow<Int> = _totalCompletions.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            logs.collect {
+                try {
+                    val db = AppDatabase.getDatabase(getApplication())
+                    val cursor = db.openHelper.readableDatabase.query(
+                        androidx.sqlite.db.SimpleSQLiteQuery("SELECT COUNT(*) FROM habit_logs WHERE completed = 1")
+                    )
+                    if (cursor.moveToFirst()) {
+                        _totalCompletions.value = cursor.getInt(0)
+                    }
+                    cursor.close()
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
     fun setRemindersEnabled(enabled: Boolean) {
         viewModelScope.launch {
             prefsRepo.setRemindersEnabled(enabled)
@@ -260,10 +280,43 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private val adaptiveStore by lazy { com.example.rabbittracker.data.AdaptiveReminderStore(getApplication()) }
+
+    fun dismissAdaptiveSuggestion(habitId: Int) {
+        viewModelScope.launch {
+            adaptiveStore.dismissSuggestion(habitId)
+        }
+    }
+
+    fun getAdaptiveSuggestionFlow(habit: Habit): kotlinx.coroutines.flow.Flow<com.example.rabbittracker.utils.AdaptiveSuggestion?> {
+        return kotlinx.coroutines.flow.combine(
+            adaptiveStore.getCompletionTimesFlow(habit.id),
+            adaptiveStore.getDismissalTimestampFlow(habit.id),
+            remindersEnabled
+        ) { times, dismissedMillis, globalReminders ->
+            com.example.rabbittracker.utils.AdaptiveReminderEngine.evaluateSuggestion(
+                habit = habit,
+                globalRemindersEnabled = globalReminders,
+                completionTimes = times,
+                lastDismissedMillis = dismissedMillis
+            )
+        }
+    }
+
+    fun applyAdaptiveSuggestion(habit: Habit, suggestedTime: String) {
+        viewModelScope.launch {
+            adaptiveStore.clearSuggestionData(habit.id)
+            updateHabit(habit.copy(reminderTime = suggestedTime))
+        }
+    }
+
     fun toggleHabit(habitId: Int) {
         viewModelScope.launch {
             val current = repo.getLog(habitId, today)
             val completed = !(current?.completed ?: false)
+            if (completed) {
+                adaptiveStore.recordCompletion(habitId)
+            }
             repo.saveLog(
                 com.example.rabbittracker.data.room.HabitLogEntity(
                     habitId = habitId,

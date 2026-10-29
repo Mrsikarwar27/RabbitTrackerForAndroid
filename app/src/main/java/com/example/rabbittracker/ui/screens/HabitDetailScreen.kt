@@ -69,6 +69,12 @@ fun HabitDetailScreen(
     LaunchedEffect(Unit) { viewModel.loadRecentLogs() }
 
     val habit = habits.find { habitId == it.id }
+
+    val suggestion by remember(habit) {
+        if (habit != null) viewModel.getAdaptiveSuggestionFlow(habit) else kotlinx.coroutines.flow.flowOf(null)
+    }.collectAsStateWithLifecycle(initialValue = null)
+
+    var confirmationText by remember { mutableStateOf<String?>(null) }
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
     val dayFormat = remember { SimpleDateFormat("EEE, d MMM", Locale.US) }
 
@@ -251,6 +257,34 @@ fun HabitDetailScreen(
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
+
+        if (suggestion != null) {
+            com.example.rabbittracker.ui.components.AdaptiveReminderCard(
+                suggestion = suggestion!!,
+                onMoveReminder = { suggestedTime ->
+                    viewModel.applyAdaptiveSuggestion(habit, suggestedTime)
+                    confirmationText = "Reminder moved to $suggestedTime"
+                },
+                onDismiss = {
+                    viewModel.dismissAdaptiveSuggestion(habit.id)
+                }
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        } else if (confirmationText != null) {
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = confirmationText!!,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(14.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         // 2x2 stat cards
         val statList = listOf(

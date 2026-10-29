@@ -276,6 +276,9 @@ fun TodayScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
+        com.example.rabbittracker.ui.components.RabbitCompanionCard(viewModel = viewModel)
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Section: Today's Habits
         Row(
             modifier = Modifier.fillMaxWidth(),
