@@ -70,6 +70,14 @@ fun HabitDetailScreen(
 
     val habit = habits.find { habitId == it.id }
 
+    val whyText by remember(habit?.id) {
+        if (habit != null) viewModel.getWhyTextFlow(habit.id) else kotlinx.coroutines.flow.flowOf("")
+    }.collectAsStateWithLifecycle(initialValue = "")
+
+    val whyPhotoPath by remember(habit?.id) {
+        if (habit != null) viewModel.getWhyPhotoPathFlow(habit.id) else kotlinx.coroutines.flow.flowOf("")
+    }.collectAsStateWithLifecycle(initialValue = "")
+
     val suggestion by remember(habit) {
         if (habit != null) viewModel.getAdaptiveSuggestionFlow(habit) else kotlinx.coroutines.flow.flowOf(null)
     }.collectAsStateWithLifecycle(initialValue = null)
@@ -257,6 +265,15 @@ fun HabitDetailScreen(
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
+
+        if (whyText.isNotBlank() || whyPhotoPath.isNotBlank()) {
+            com.example.rabbittracker.ui.components.HabitWhyCard(
+                whyText = whyText,
+                photoPath = whyPhotoPath,
+                onEdit = onEdit
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         if (suggestion != null) {
             com.example.rabbittracker.ui.components.AdaptiveReminderCard(

@@ -356,12 +356,33 @@ fun SettingsScreen(
     }
 
     if (showTimePicker) {
-        ReminderTimePickerDialog(
-            initialTime = reminderTime,
-            onDismiss = { showTimePicker = false },
-            onConfirm = { t ->
-                viewModel.setReminderTime(t)
-                showTimePicker = false
+        val initialMins = com.example.rabbittracker.utils.NotificationHelper.parseReminderTime(reminderTime)
+        val timePickerState = androidx.compose.material3.rememberTimePickerState(
+            initialHour = initialMins.first,
+            initialMinute = initialMins.second,
+            is24Hour = false
+        )
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { androidx.compose.material3.Text("Select Reminder Time") },
+            text = { androidx.compose.material3.TimePicker(state = timePickerState) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    val cal = java.util.Calendar.getInstance().apply {
+                        set(java.util.Calendar.HOUR_OF_DAY, timePickerState.hour)
+                        set(java.util.Calendar.MINUTE, timePickerState.minute)
+                    }
+                    val formatted = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US).format(cal.time)
+                    viewModel.setReminderTime(formatted)
+                    showTimePicker = false
+                }) {
+                    androidx.compose.material3.Text("OK")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showTimePicker = false }) {
+                    androidx.compose.material3.Text("Cancel")
+                }
             }
         )
     }

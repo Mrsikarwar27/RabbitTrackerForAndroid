@@ -229,10 +229,20 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun addHabit(habit: Habit) {
+    fun addHabit(
+        habit: Habit,
+        whyText: String = "",
+        whyPhotoUri: android.net.Uri? = null
+    ) {
         viewModelScope.launch {
             val rowId = repo.insertHabit(habit.toEntity())
             val newId = rowId.toInt()
+            if (newId > 0 && (whyText.isNotBlank() || whyPhotoUri != null)) {
+                habitWhyStore.saveWhyText(newId, whyText)
+                if (whyPhotoUri != null) {
+                    habitWhyStore.saveWhyPhoto(newId, whyPhotoUri)
+                }
+            }
             refresh()
             val context = getApplication<Application>()
             if (remindersEnabled.value && habit.reminderEnabled && newId > 0) {
@@ -270,10 +280,31 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private val habitWhyStore by lazy { com.example.rabbittracker.data.HabitWhyStore(getApplication()) }
+
+    fun getWhyTextFlow(habitId: Int): kotlinx.coroutines.flow.Flow<String> = habitWhyStore.getWhyTextFlow(habitId)
+    fun getWhyPhotoPathFlow(habitId: Int): kotlinx.coroutines.flow.Flow<String> = habitWhyStore.getWhyPhotoPathFlow(habitId)
+
+    fun saveHabitWhy(habitId: Int, text: String, photoUri: android.net.Uri?) {
+        viewModelScope.launch {
+            habitWhyStore.saveWhyText(habitId, text)
+            if (photoUri != null) {
+                habitWhyStore.saveWhyPhoto(habitId, photoUri)
+            }
+        }
+    }
+
+    fun removeHabitWhyPhoto(habitId: Int) {
+        viewModelScope.launch {
+            habitWhyStore.deleteWhyPhoto(habitId)
+        }
+    }
+
     fun deleteHabit(habit: Habit) {
         viewModelScope.launch {
             val context = getApplication<Application>()
             NotificationHelper.cancelHabitAlarm(context, habit.id)
+            habitWhyStore.deleteWhy(habit.id)
             repo.deleteLogsForHabit(habit.id)
             repo.deleteHabit(habit.toEntity())
             refresh()

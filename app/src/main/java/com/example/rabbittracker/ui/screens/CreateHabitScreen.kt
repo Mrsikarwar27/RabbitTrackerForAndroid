@@ -1,5 +1,10 @@
 package com.example.rabbittracker.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +21,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTimeFilled
-import androidx.compose.material.icons.rounded.Cancel
+import androidx.compose.material.icons.rounded.AddAPhoto
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.AlertDialog
@@ -32,6 +40,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
@@ -53,16 +62,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.rabbittracker.ui.HabitViewModel
 import com.example.rabbittracker.ui.components.habitAccentNames
 import com.example.rabbittracker.ui.components.habitIcon
 import com.example.rabbittracker.ui.components.habitIcons
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import com.example.rabbittracker.utils.NotificationHelper
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -71,6 +80,7 @@ fun CreateHabitScreen(
     editHabitId: Int? = null,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val existing = remember(habits, editHabitId) {
         editHabitId?.let { id -> habits.find { it.id == id } }
@@ -86,6 +96,34 @@ fun CreateHabitScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var prefilled by remember { mutableStateOf(false) }
+
+    var whyText by remember { mutableStateOf("") }
+    var whyPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var existingPhotoPath by remember { mutableStateOf("") }
+
+    val whyTextFromStore by remember(existing?.id) {
+        if (existing != null) viewModel.getWhyTextFlow(existing.id) else kotlinx.coroutines.flow.flowOf("")
+    }.collectAsStateWithLifecycle(initialValue = "")
+
+    val whyPhotoPathFromStore by remember(existing?.id) {
+        if (existing != null) viewModel.getWhyPhotoPathFlow(existing.id) else kotlinx.coroutines.flow.flowOf("")
+    }.collectAsStateWithLifecycle(initialValue = "")
+
+    LaunchedEffect(whyTextFromStore, whyPhotoPathFromStore) {
+        if (existing != null) {
+            if (whyText.isBlank() && whyTextFromStore.isNotBlank()) whyText = whyTextFromStore
+            if (existingPhotoPath.isBlank() && whyPhotoPathFromStore.isNotBlank()) existingPhotoPath = whyPhotoPathFromStore
+        }
+    }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            whyPhotoUri = uri
+            existingPhotoPath = ""
+        }
+    }
 
     LaunchedEffect(existing) {
         val h = existing ?: return@LaunchedEffect
@@ -118,8 +156,9 @@ fun CreateHabitScreen(
         )
         if (existing != null) {
             viewModel.updateHabit(habit)
+            viewModel.saveHabitWhy(existing.id, whyText, whyPhotoUri)
         } else {
-            viewModel.addHabit(habit)
+            viewModel.addHabit(habit, whyText, whyPhotoUri)
         }
         onBack()
     }
@@ -152,81 +191,31 @@ fun CreateHabitScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Preview card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(MaterialTheme.shapes.small)
-                        .background(primaryColor)
-                        .padding(12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = habitIcon(habitIcons[selectedIconIndex]),
-                        contentDescription = "Icon",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        name.ifBlank { "New Habit" },
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        selectedFrequency,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Form
-        Text("Habit name", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(modifier = Modifier.height(4.dp))
+        // Name
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-            ),
-            shape = MaterialTheme.shapes.medium,
+            label = { Text("Habit Name", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             singleLine = true,
-            trailingIcon = {
-                if (name.isNotEmpty()) {
-                    IconButton(onClick = { name = "" }) {
-                        Icon(imageVector = Icons.Rounded.Cancel, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            ),
+            shape = MaterialTheme.shapes.medium
         )
         Spacer(modifier = Modifier.height(12.dp))
 
         Text("Category", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(4.dp))
+        val categories = listOf("Health", "Fitness", "Mindset", "Work", "Personal")
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            listOf("Health", "Fitness", "Mind", "Productivity").forEach { cat ->
+            categories.forEach { cat ->
                 FilterChip(
                     selected = selectedCategory == cat,
                     onClick = { selectedCategory = cat },
@@ -338,6 +327,122 @@ fun CreateHabitScreen(
                 }
             }
         }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Your Why (optional) section
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(imageVector = Icons.Rounded.Favorite, contentDescription = "Why", tint = primaryColor, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text("Your Why (optional)", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text("Personal reason or photo to stay motivated", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = whyText,
+                    onValueChange = { if (it.length <= 120) whyText = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("e.g. BP control karna hai", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    maxLines = 3,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    supportingText = {
+                        Text(
+                            "${whyText.length}/120",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.End
+                        )
+                    }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                val photoBitmap = remember(whyPhotoUri, existingPhotoPath) {
+                    when {
+                        whyPhotoUri != null -> {
+                            try {
+                                val stream = context.contentResolver.openInputStream(whyPhotoUri!!)
+                                val b = android.graphics.BitmapFactory.decodeStream(stream)
+                                stream?.close()
+                                b
+                            } catch (_: Exception) { null }
+                        }
+                        existingPhotoPath.isNotBlank() -> {
+                            try {
+                                val file = java.io.File(existingPhotoPath)
+                                if (file.exists()) android.graphics.BitmapFactory.decodeFile(file.absolutePath) else null
+                            } catch (_: Exception) { null }
+                        }
+                        else -> null
+                    }
+                }
+
+                if (photoBitmap != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .clip(MaterialTheme.shapes.small)
+                    ) {
+                        Image(
+                            bitmap = photoBitmap.asImageBitmap(),
+                            contentDescription = "Why photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        IconButton(
+                            onClick = {
+                                whyPhotoUri = null
+                                if (existing != null && existingPhotoPath.isNotBlank()) {
+                                    viewModel.removeHabitWhyPhoto(existing.id)
+                                }
+                                existingPhotoPath = ""
+                            },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), CircleShape)
+                        ) {
+                            Icon(imageVector = Icons.Rounded.Close, contentDescription = "Remove photo", tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {
+                            photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(imageVector = Icons.Rounded.AddAPhoto, contentDescription = "Add photo", modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Add Photo")
+                        }
+                    }
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         // Save button
@@ -394,70 +499,33 @@ fun CreateHabitScreen(
     }
 
     if (showTimePicker) {
-        ReminderTimePickerDialog(
-            initialTime = reminderTime,
-            onDismiss = { showTimePicker = false },
-            onConfirm = { t ->
-                reminderTime = t
-                showTimePicker = false
+        val initialMins = NotificationHelper.parseReminderTime(reminderTime)
+        val timePickerState = rememberTimePickerState(
+            initialHour = initialMins.first,
+            initialMinute = initialMins.second,
+            is24Hour = false
+        )
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Select Reminder Time") },
+            text = { TimePicker(state = timePickerState) },
+            confirmButton = {
+                TextButton(onClick = {
+                    val cal = java.util.Calendar.getInstance().apply {
+                        set(java.util.Calendar.HOUR_OF_DAY, timePickerState.hour)
+                        set(java.util.Calendar.MINUTE, timePickerState.minute)
+                    }
+                    reminderTime = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US).format(cal.time)
+                    showTimePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
             }
         )
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReminderTimePickerDialog(
-    initialTime: String,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    val cal = Calendar.getInstance()
-    var initialHour = 8
-    var initialMinute = 0
-    try {
-        val sdf = SimpleDateFormat("h:mm a", Locale.US)
-        val date = sdf.parse(initialTime)
-        if (date != null) {
-            cal.time = date
-            initialHour = cal.get(Calendar.HOUR_OF_DAY)
-            initialMinute = cal.get(Calendar.MINUTE)
-        }
-    } catch (_: Exception) {}
-
-    val timePickerState = rememberTimePickerState(
-        initialHour = initialHour,
-        initialMinute = initialMinute,
-        is24Hour = false
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        title = { Text("Select Reminder Time", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface) },
-        text = {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                TimePicker(state = timePickerState)
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val hour = timePickerState.hour
-                val minute = timePickerState.minute
-                val c = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
-                }
-                val formatted = SimpleDateFormat("h:mm a", Locale.US).format(c.time)
-                onConfirm(formatted)
-            }) {
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
 }

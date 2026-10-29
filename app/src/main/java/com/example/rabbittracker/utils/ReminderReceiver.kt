@@ -16,6 +16,7 @@ import com.example.rabbittracker.data.room.AppDatabase
 import com.example.rabbittracker.data.room.HabitLogEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -134,10 +135,22 @@ class ReminderReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        var finalMessage = message
+        try {
+            val store = com.example.rabbittracker.data.HabitWhyStore(context)
+            val whyText = kotlinx.coroutines.runBlocking {
+                store.getWhyTextFlow(habitId).firstOrNull()
+            }
+            if (!whyText.isNullOrBlank()) {
+                finalMessage = "$message\nYour why: $whyText"
+            }
+        } catch (_: Exception) {}
+
         val builder = NotificationCompat.Builder(context, "habit_reminders_v2")
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Habit Reminder")
-            .setContentText(message)
+            .setContentText(finalMessage)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(finalMessage))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(false)
             .setOngoing(true)
