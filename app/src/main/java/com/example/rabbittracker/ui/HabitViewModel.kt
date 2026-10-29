@@ -312,6 +312,22 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private val adaptiveStore by lazy { com.example.rabbittracker.data.AdaptiveReminderStore(getApplication()) }
+    private val eveningReviewStore by lazy { com.example.rabbittracker.data.EveningReviewStore(getApplication()) }
+
+    val firstStepHabitIdFlow: StateFlow<Int> = eveningReviewStore.firstStepHabitIdFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), -1)
+
+    val firstStepDateFlow: StateFlow<String> = eveningReviewStore.firstStepDateFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    val lastReviewedDateFlow: StateFlow<String> = eveningReviewStore.lastReviewedDateFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    fun saveEveningReview(firstStepHabitId: Int, tomorrowDate: String, todayDate: String) {
+        viewModelScope.launch {
+            eveningReviewStore.saveReview(firstStepHabitId, tomorrowDate, todayDate)
+        }
+    }
 
     fun dismissAdaptiveSuggestion(habitId: Int) {
         viewModelScope.launch {

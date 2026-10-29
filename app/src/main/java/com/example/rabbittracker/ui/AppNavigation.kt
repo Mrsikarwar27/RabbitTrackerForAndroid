@@ -52,7 +52,14 @@ fun AppNavigation(
                 onNavigateToHabits = { navController.navigate(Screen.Habits.route) },
                 onNavigateToCreate = { navController.navigate("create_habit") },
                 onNavigateToDetail = { id -> navController.navigate("habit_detail/$id") },
-                onNavigateToSettings = { navController.navigate("settings") }
+                onNavigateToSettings = { navController.navigate("settings") },
+                onNavigateToEveningReview = { navController.navigate("evening_review") }
+            )
+        }
+        composable("evening_review") {
+            EveningReviewScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Habits.route) {

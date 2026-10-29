@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -88,12 +89,17 @@ fun TodayScreen(
     onNavigateToHabits: () -> Unit,
     onNavigateToCreate: () -> Unit,
     onNavigateToDetail: (Int) -> Unit,
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToEveningReview: () -> Unit = {}
 ) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val logs by viewModel.logs.collectAsStateWithLifecycle()
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val userPhotoPath by viewModel.userPhotoPath.collectAsStateWithLifecycle()
+
+    val firstStepHabitId by viewModel.firstStepHabitIdFlow.collectAsStateWithLifecycle()
+    val firstStepDate by viewModel.firstStepDateFlow.collectAsStateWithLifecycle()
+    val lastReviewedDate by viewModel.lastReviewedDateFlow.collectAsStateWithLifecycle()
 
     val effectiveName = if (userName.isBlank()) "Vijay" else userName
 
@@ -192,6 +198,38 @@ fun TodayScreen(
         }
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Hook 2: Morning First Step Line
+        val firstStepHabit = remember(habits, firstStepHabitId) {
+            habits.find { it.id == firstStepHabitId }
+        }
+        if (firstStepDate == viewModel.today && firstStepHabit != null) {
+            val isFirstStepDone = logs[firstStepHabit.id]?.completed == true
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (isFirstStepDone) Icons.Rounded.Check else Icons.Rounded.Star,
+                        contentDescription = "First Step",
+                        tint = primaryColor,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (isFirstStepDone) "First step done. Great start." else "First step today: ${firstStepHabit.name}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         // Progress card using surfaceContainerLow
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -278,6 +316,21 @@ fun TodayScreen(
 
         com.example.rabbittracker.ui.components.RabbitCompanionCard(viewModel = viewModel)
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Hook 1: Evening Review Card (Visible 19:00+)
+        val currentHour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
+        if (currentHour >= 19) {
+            val isReviewedToday = lastReviewedDate == viewModel.today
+            val firstStepTomorrowHabit = habits.find { it.id == firstStepHabitId }
+            val firstStepTomorrowName = if (firstStepDate != viewModel.today) firstStepTomorrowHabit?.name else null
+
+            com.example.rabbittracker.ui.components.EveningReviewCard(
+                isReviewedToday = isReviewedToday,
+                firstStepTomorrowName = firstStepTomorrowName,
+                onOpenReview = onNavigateToEveningReview
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Section: Today's Habits
         Row(

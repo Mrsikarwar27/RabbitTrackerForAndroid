@@ -45,8 +45,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.rabbittracker.ui.HabitViewModel
+import com.example.rabbittracker.ui.components.CoachInsightsCard
 import com.example.rabbittracker.ui.components.TopBar
 import com.example.rabbittracker.ui.components.habitIcon
+import com.example.rabbittracker.utils.InsightsEngine
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -59,7 +61,11 @@ fun StatisticsScreen(
     var selectedSegment by remember { mutableStateOf("Month") }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val recentLogs by viewModel.recentLogs.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.loadRecentLogs() }
+    LaunchedEffect(Unit) { viewModel.loadRecentLogs(28) }
+
+    val insights = remember(habits, recentLogs, viewModel.today) {
+        InsightsEngine.computeInsights(habits, recentLogs, viewModel.today)
+    }
 
     val isDone: (Int, String) -> Boolean = { id, key ->
         val log = recentLogs[key]?.get(id)
@@ -97,6 +103,10 @@ fun StatisticsScreen(
     ) {
         TopBar(title = "Statistics", onProfileClick = onNavigateToSettings)
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Coach Insights Card at the very top
+        CoachInsightsCard(insights = insights)
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Segmented control using SingleChoiceSegmentedButtonRow
         val segmentOptions = listOf("Week", "Month")
