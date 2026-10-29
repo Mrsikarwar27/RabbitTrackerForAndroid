@@ -358,7 +358,7 @@ fun CreateHabitScreen(
                     value = whyText,
                     onValueChange = { if (it.length <= 120) whyText = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("e.g. BP control karna hai", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    placeholder = { Text("e.g. I want to control my blood pressure (BP) ", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     maxLines = 3,
                     shape = MaterialTheme.shapes.medium,
                     colors = OutlinedTextFieldDefaults.colors(
