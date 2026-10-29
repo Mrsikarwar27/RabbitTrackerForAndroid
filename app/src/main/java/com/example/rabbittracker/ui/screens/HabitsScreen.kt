@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.rabbittracker.data.Habit
 import com.example.rabbittracker.ui.HabitViewModel
+import com.example.rabbittracker.ui.components.RoutinesSection
 import com.example.rabbittracker.ui.components.TopBar
 import com.example.rabbittracker.ui.components.habitAccent
 import com.example.rabbittracker.ui.components.habitIcon
@@ -69,10 +70,14 @@ fun HabitsScreen(
     viewModel: HabitViewModel,
     onNavigateToCreate: () -> Unit,
     onNavigateToDetail: (Int) -> Unit,
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToCreateRoutine: () -> Unit = {},
+    onStartRoutine: (String) -> Unit = {},
+    onEditRoutine: (String) -> Unit = {}
 ) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val logs by viewModel.logs.collectAsStateWithLifecycle()
+    val routines by viewModel.routines.collectAsStateWithLifecycle()
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val userPhotoPath by viewModel.userPhotoPath.collectAsStateWithLifecycle()
 
@@ -116,6 +121,16 @@ fun HabitsScreen(
     ) {
         TopBar(title = "Habits", userName = userName, userPhotoPath = userPhotoPath, onProfileClick = onNavigateToSettings)
         Spacer(modifier = Modifier.height(4.dp))
+
+        // Routines Section at the top of Habits screen
+        RoutinesSection(
+            routines = routines,
+            habits = habits,
+            logs = logs,
+            onStartRoutine = onStartRoutine,
+            onCreateRoutine = onNavigateToCreateRoutine,
+            onEditRoutine = onEditRoutine
+        )
 
         // Search field
         OutlinedTextField(

@@ -311,6 +311,23 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    private val routinesStore by lazy { com.example.rabbittracker.data.RoutinesStore(getApplication()) }
+
+    val routines: StateFlow<List<com.example.rabbittracker.data.Routine>> = routinesStore.routinesFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun saveRoutine(routine: com.example.rabbittracker.data.Routine) {
+        viewModelScope.launch {
+            routinesStore.saveRoutine(routine)
+        }
+    }
+
+    fun deleteRoutine(routineId: String) {
+        viewModelScope.launch {
+            routinesStore.deleteRoutine(routineId)
+        }
+    }
+
     private val adaptiveStore by lazy { com.example.rabbittracker.data.AdaptiveReminderStore(getApplication()) }
     private val eveningReviewStore by lazy { com.example.rabbittracker.data.EveningReviewStore(getApplication()) }
 

@@ -67,7 +67,35 @@ fun AppNavigation(
                 viewModel = viewModel,
                 onNavigateToCreate = { navController.navigate("create_habit") },
                 onNavigateToDetail = { id -> navController.navigate("habit_detail/$id") },
-                onNavigateToSettings = { navController.navigate("settings") }
+                onNavigateToSettings = { navController.navigate("settings") },
+                onNavigateToCreateRoutine = { navController.navigate("create_routine") },
+                onStartRoutine = { routineId -> navController.navigate("run_routine/$routineId") },
+                onEditRoutine = { routineId -> navController.navigate("create_routine?routineId=$routineId") }
+            )
+        }
+        composable(
+            route = "create_routine?routineId={routineId}",
+            arguments = listOf(
+                navArgument("routineId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val routineId = backStackEntry.arguments?.getString("routineId")
+            CreateRoutineScreen(
+                viewModel = viewModel,
+                routineId = routineId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("run_routine/{routineId}") { backStackEntry ->
+            val routineId = backStackEntry.arguments?.getString("routineId") ?: ""
+            RoutineRunScreen(
+                viewModel = viewModel,
+                routineId = routineId,
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Statistics.route) {
