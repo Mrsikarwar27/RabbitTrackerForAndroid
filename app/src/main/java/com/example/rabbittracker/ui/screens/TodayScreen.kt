@@ -65,9 +65,21 @@ import com.example.rabbittracker.ui.components.TopBar
 import com.example.rabbittracker.ui.components.habitAccent
 import com.example.rabbittracker.ui.components.habitIcon
 import com.example.rabbittracker.utils.tickVibrate
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+
+private fun getGreetingPrefix(): String {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when (hour) {
+        in 5..11 -> "Good morning"
+        in 12..16 -> "Good afternoon"
+        in 17..20 -> "Good evening"
+        else -> "Good night"
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -84,6 +96,14 @@ fun TodayScreen(
     val userPhotoPath by viewModel.userPhotoPath.collectAsStateWithLifecycle()
 
     val effectiveName = if (userName.isBlank()) "Vijay" else userName
+
+    var greetingPrefix by remember { mutableStateOf(getGreetingPrefix()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            greetingPrefix = getGreetingPrefix()
+            delay(60000L)
+        }
+    }
 
     var selectedCategoryFilter by remember { mutableStateOf("All") }
     var selectedStatusFilter by remember { mutableStateOf("All") }
@@ -104,6 +124,10 @@ fun TodayScreen(
             else -> true
         }
         matchesCategory && matchesStatus
+    }
+
+    val sortedHabits = remember(filteredHabits, logs) {
+        filteredHabits.sortedBy { habit -> logs[habit.id]?.completed == true }
     }
 
     val doneCount = habits.count { habit ->
@@ -144,7 +168,7 @@ fun TodayScreen(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Good morning, $effectiveName",
+                    text = "$greetingPrefix, $effectiveName",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
@@ -264,14 +288,14 @@ fun TodayScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                "${filteredHabits.size} active",
+                "${sortedHabits.size} active",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (filteredHabits.isEmpty()) {
+        if (sortedHabits.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -292,7 +316,7 @@ fun TodayScreen(
                 }
             }
         } else {
-            filteredHabits.forEach { habit ->
+            sortedHabits.forEach { habit ->
                 val log = logs[habit.id]
                 val completed = log?.completed == true
                 HabitRowCard(

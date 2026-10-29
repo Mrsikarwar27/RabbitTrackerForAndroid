@@ -90,6 +90,10 @@ fun HabitsScreen(
         matchesQuery && matchesFilter
     }
 
+    val sortedHabits = remember(filtered, logs) {
+        filtered.sortedBy { habit -> logs[habit.id]?.completed == true }
+    }
+
     val doneCount = habits.count { habit ->
         val log = logs[habit.id]
         log?.completed == true
@@ -101,7 +105,6 @@ fun HabitsScreen(
     )
 
     val primaryColor = MaterialTheme.colorScheme.primary
-    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
     val trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
 
     Column(
@@ -119,8 +122,8 @@ fun HabitsScreen(
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search habits...", color = onSurfaceVariantColor) },
-            leadingIcon = { Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search", tint = onSurfaceVariantColor) },
+            placeholder = { Text("Search habits...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            leadingIcon = { Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -214,7 +217,7 @@ fun HabitsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Detailed habit cards or 56dp circular FAB
-        if (filtered.isEmpty()) {
+        if (sortedHabits.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -235,7 +238,7 @@ fun HabitsScreen(
                 }
             }
         } else {
-            filtered.forEach { habit ->
+            sortedHabits.forEach { habit ->
                 HabitDetailRow(
                     habit = habit,
                     completed = logs[habit.id]?.completed == true,
