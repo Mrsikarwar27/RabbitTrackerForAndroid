@@ -103,9 +103,9 @@ fun RabbitCompanionCard(
             "Resting up for a productive day ahead. You've got this!"
         )
         isAllDone -> listOf(
-            "All habits done! Feast day for your rabbit 🎉",
-            "Superstar status! Every habit completed today! ✨",
-            "Feast time! Your rabbit is super proud of you! 🥕🎉"
+            "All habits done! Feast day for your rabbit",
+            "Superstar status! Every habit completed today!",
+            "Feast time! Your rabbit is super proud of you!"
         )
         else -> listOf(
             "$doneCount of $totalHabits done — tasty carrots!",
@@ -327,7 +327,7 @@ fun RabbitCompanionCard(
                     }
 
                     Text(
-                        text = "🥕 x $doneCount",
+                        text = "Carrots: $doneCount",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = primaryColor

@@ -18,6 +18,8 @@ class UserPreferencesRepository(private val context: Context) {
         val USER_PHOTO_PATH = stringPreferencesKey("user_photo_path")
         val REMINDERS_ENABLED = booleanPreferencesKey("reminders_enabled")
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val ACCENT_COLOR = stringPreferencesKey("accent_color")
     }
 
     val onboardingCompletedFlow: Flow<Boolean> = context.dataStore.data
@@ -43,6 +45,16 @@ class UserPreferencesRepository(private val context: Context) {
     val reminderTimeFlow: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.REMINDER_TIME] ?: "08:00 AM"
+        }
+
+    val themeModeFlow: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.THEME_MODE] ?: "system"
+        }
+
+    val accentColorFlow: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.ACCENT_COLOR] ?: "Carrot"
         }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
@@ -72,6 +84,18 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setReminderTime(time: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.REMINDER_TIME] = time
+        }
+    }
+
+    suspend fun setThemeMode(mode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.THEME_MODE] = mode
+        }
+    }
+
+    suspend fun setAccentColor(color: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ACCENT_COLOR] = color
         }
     }
 }

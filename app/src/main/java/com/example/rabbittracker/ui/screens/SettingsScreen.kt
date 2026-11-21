@@ -88,6 +88,8 @@ fun SettingsScreen(
     val userPhotoPath by viewModel.userPhotoPath.collectAsStateWithLifecycle()
     val remindersEnabled by viewModel.remindersEnabled.collectAsStateWithLifecycle()
     val reminderTime by viewModel.reminderTime.collectAsStateWithLifecycle()
+    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val accentColor by viewModel.accentColor.collectAsStateWithLifecycle()
 
     var showTimePicker by remember { mutableStateOf(false) }
     var isEditingName by remember { mutableStateOf(false) }
@@ -237,6 +239,87 @@ fun SettingsScreen(
                                 shape = MaterialTheme.shapes.small
                             ) {
                                 Text("Remove Photo", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Appearance Section
+            Text("APPEARANCE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Theme Mode", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf("system" to "System", "light" to "Light", "dark" to "Dark").forEach { (key, label) ->
+                            val selected = themeMode == key
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { viewModel.setThemeMode(key) },
+                                shape = MaterialTheme.shapes.small,
+                                color = if (selected) primaryColor else MaterialTheme.colorScheme.surfaceContainerHigh
+                            ) {
+                                Box(
+                                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Accent Color", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        val accents = listOf(
+                            "Carrot" to androidx.compose.ui.graphics.Color(0xFFFF5A36),
+                            "Teal" to androidx.compose.ui.graphics.Color(0xFF006B5C),
+                            "Amber" to androidx.compose.ui.graphics.Color(0xFF845400),
+                            "Purple" to androidx.compose.ui.graphics.Color(0xFF7C3AED),
+                            "Rose" to androidx.compose.ui.graphics.Color(0xFFE11D48)
+                        )
+                        accents.forEach { (name, color) ->
+                            val selected = accentColor == name
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .clickable { viewModel.setAccentColor(name) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (selected) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = name,
+                                        tint = androidx.compose.ui.graphics.Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                     }

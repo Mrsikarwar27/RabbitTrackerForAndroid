@@ -45,6 +45,12 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
     val reminderTime: StateFlow<String> = prefsRepo.reminderTimeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "08:00 AM")
 
+    val themeMode: StateFlow<String> = prefsRepo.themeModeFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "system")
+
+    val accentColor: StateFlow<String> = prefsRepo.accentColorFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Carrot")
+
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
     val habits: StateFlow<List<Habit>> = _habits.asStateFlow()
 
@@ -114,6 +120,18 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
             } else {
                 NotificationHelper.cancelHabitAlarm(context, 900001)
             }
+        }
+    }
+
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch {
+            prefsRepo.setThemeMode(mode)
+        }
+    }
+
+    fun setAccentColor(color: String) {
+        viewModelScope.launch {
+            prefsRepo.setAccentColor(color)
         }
     }
 
@@ -191,7 +209,7 @@ class HabitViewModel(app: Application) : AndroidViewModel(app) {
         NotificationHelper.showReminderNotification(
             context,
             "Rabbit Tracker Reminder",
-            "Time to check your habits and maintain your streak! 🐰"
+            "Time to check your habits and maintain your streak!"
         )
     }
 
